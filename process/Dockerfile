@@ -8,4 +8,4 @@ php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
 php composer-setup.php --install-dir=/usr/bin --filename=composer && \
 php -r "unlink('composer-setup.php');"
 
-RUN apt-get update && apt-get install -y git zip
+RUN apt-get update && apt-get install -y git zip ntpdate

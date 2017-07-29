@@ -2,15 +2,16 @@
 
 namespace App\Console\Commands;
 
+use App\Repositories\FootballerRepository;
+use App\Services\Poster;
 use Illuminate\Console\Command;
-use App\Services\ChampionatParser;
-use Thujohn\Twitter\Facades\Twitter;
+use App\Repositories\FootballerParser;
 
 class Process extends Command
 {
+    protected $tournaments = [2200, 2220]; // rfpl & el
     protected $footballers = [14550, 35]; // kokoba
 //    protected $footballers = [41607, 112932]; // super
-    protected $target = 35;
 
     protected $signature = 'process:start';
 
@@ -28,17 +29,21 @@ class Process extends Command
      */
     public function handle()
     {
-        $sum = 0;
+        $poster = new Poster();
+        $footballers = [];
 
-        foreach ($this->footballers as $footballerId) {
-            $parser = new ChampionatParser($footballerId);
-            $player = $parser->parse();
-            $sum += $player->getGoals();
+        foreach ($this->tournaments as $tournament) {
+            foreach ($this->footballers as $footballerId) {
+                $repository = new FootballerRepository($footballerId, $tournament);
+                $footballer = (new FootballerParser($footballerId, $tournament))->parse();
+
+                $footballers[] = $footballer;
+                $poster->postDifference($footballer, $repository->load());
+                $repository->save($footballer);
+            }
         }
 
-        echo Twitter::postTweet([
-            'status' => sprintf('Мы забили уже %d из %d голов.', $sum, $this->target),
-            'format' => 'json'
-        ]);
+
+        $poster->postSummary($footballers);
     }
 }

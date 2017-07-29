@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Repositories;
 
 use App\Entities\Footballer;
 use App\Entities\Name;
@@ -9,19 +9,15 @@ use Sunra\PhpSimple\HtmlDomParser;
 /**
 * 
 */
-class ChampionatParser
+class FootballerParser extends AbstractFootballerRepository
 {
-    const PROFILE_URL = 'https://www.championat.com/football/_russiapl/%d/player/%d.html';
-    
-    protected $tournamentId = 2200; // РФПЛ 2017/18
-    protected $playerId = null;
+    const PROFILE_URL = 'https://www.championat.com/football/%s/%d/player/%d.html';
 
+    private $tournamentsMapping = [
+        2200 => '_russiapl',
+        2220 => '_europeleague',
+    ];
     private $el = null;
-
-    function __construct(int $playerId)
-    {
-        $this->playerId = $playerId;
-    }
 
     public function parse() : Footballer
     {
@@ -50,7 +46,7 @@ class ChampionatParser
     }
 
     protected function loadDom() : self {
-        $url = sprintf(self::PROFILE_URL, $this->tournamentId, $this->playerId);
+        $url = sprintf(self::PROFILE_URL, $this->tournamentsMapping[$this->tournamentId], $this->tournamentId, $this->playerId);
         $page = file_get_contents($url);
         $this->el = HtmlDomParser::str_get_html($page);
 

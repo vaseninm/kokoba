@@ -3,8 +3,8 @@ services:
   redis:
     image: redis
   process:
-    build: .
+    build: ./process
     volumes:
       - ./app:/app
-#    depends_on:
-#      - redis
+    depends_on:
+      - redis
